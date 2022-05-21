@@ -10,38 +10,42 @@ public class IsometricCharacterMovement : NetworkBehaviour
 {
 
     private Rigidbody2D _rigidbody2D;
-    private TrackingCamera trackingCamera;
+    [SerializeField] private TrackingCamera trackingCamera;
 
-    [SerializeField] private float _movementSpeed;
+    [SerializeField] private float _movementSpeed = 2f;
 
     private void Awake()
     {
         _rigidbody2D = GetComponent<Rigidbody2D>();
-        if (hasAuthority)
+    }
+
+    private void Start()
+    {
+        if (isClient && isLocalPlayer)
         {
-            trackingCamera = Camera.main.GetComponent<TrackingCamera>();
+            trackingCamera = Camera.main.transform.GetComponent<TrackingCamera>();
             trackingCamera.SetTrackingTransform(transform);
         }
     }
 
-    void Start()
-    {
-        
-    }
-    
     void FixedUpdate()
     {
         if (isLocalPlayer)
         {
-            Vector2 currentPos = _rigidbody2D.position;
-            float horizontalInput = Input.GetAxis("Horizontal");
-            float verticalInput = Input.GetAxis("Vertical");
-
-            Vector2 inputVector = new Vector2(horizontalInput, verticalInput);
-            Vector2 movement = inputVector * _movementSpeed;
-            Vector2 newPos = currentPos + movement * Time.fixedDeltaTime;
-
-            _rigidbody2D.MovePosition(newPos);
+            Move();
         }
+    }
+
+    private void Move()
+    {
+        Vector2 currentPos = _rigidbody2D.position;
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+
+        Vector2 inputVector = new Vector2(horizontalInput, verticalInput).normalized;
+        Vector2 movement = inputVector * _movementSpeed;
+        Vector2 newPos = currentPos + movement * Time.fixedDeltaTime;
+
+        _rigidbody2D.MovePosition(newPos);
     }
 }

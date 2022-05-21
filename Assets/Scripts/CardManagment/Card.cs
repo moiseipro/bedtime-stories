@@ -1,3 +1,5 @@
+using UnityTemplateProjects.Game;
+
 namespace UnityTemplateProjects
 {
     public abstract class Card
@@ -9,18 +11,18 @@ namespace UnityTemplateProjects
         
         private CardDanger[] _cardDangers;
 
-        public void ActivateAllDangers()
+        public void ActivateAllDangers(IPlayer player)
         {
             foreach (var cardDanger in _cardDangers)
             {
-                cardDanger.ActivateAllEvents();
+                cardDanger.ActivateAllEvents(player);
             }
         }
 
-        public void ActivateDanger(int number)
+        public void ActivateDanger(IPlayer player, int number)
         {
             if(_cardDangers.Length < number && number < 0) return;
-            _cardDangers[number].ActivateAllEvents();
+            _cardDangers[number].ActivateAllEvents(player);
         }
         
     }
