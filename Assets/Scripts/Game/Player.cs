@@ -11,14 +11,14 @@ namespace UnityTemplateProjects.Game
         void TakeDamage(int value);
         void TakeHorror(int value);
     }
-    public class Player : NetworkBehaviour, IPlayer
+    public class Player : MonoBehaviour, IPlayer
     {
         private PlayerStats _playerStats = new PlayerStats();
         private PlayerCards _playerCards = new PlayerCards();
 
         private void Awake()
         {
-            Debug.Log(_playerStats.Health);
+            Debug.Log(_playerStats.Reason);
         }
 
         public void TakeDamage(int value)
@@ -34,26 +34,26 @@ namespace UnityTemplateProjects.Game
 
     public class PlayerStats
     {
-        private int _health;
-        public int Health => _health;
+        private int _reason;
+        public int Reason => _reason;
         private int _horror;
         public int Horror => _horror;
 
         public PlayerStats()
         {
-            _health = 5;
+            _reason = 5;
             _horror = 0;
         }
         
         public void AddHealth(int value)
         {
-            _health += value;
+            _reason += value;
             Debug.Log("Получено здоровье: " + value);
         }
 
         public void ReduceHealth(int value)
         {
-            _health -= value;
+            _reason -= value;
             Debug.Log("Забрано здоровье: " + value);
         }
 

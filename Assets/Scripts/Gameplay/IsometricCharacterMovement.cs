@@ -1,51 +1,58 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityTemplateProjects.Gameplay;
 
-[RequireComponent(typeof(Rigidbody2D))]
-public class IsometricCharacterMovement : NetworkBehaviour
+namespace Gameplay
 {
-
-    private Rigidbody2D _rigidbody2D;
-    [SerializeField] private TrackingCamera trackingCamera;
-
-    [SerializeField] private float _movementSpeed = 2f;
-
-    private void Awake()
+    [RequireComponent(typeof(CharacterController))]
+    public class IsometricCharacterMovement : MonoBehaviour
     {
-        _rigidbody2D = GetComponent<Rigidbody2D>();
-    }
 
-    private void Start()
-    {
-        if (isClient && isLocalPlayer)
+        private CharacterController _characterController;
+        [SerializeField] private TrackingCamera trackingCamera;
+
+        [SerializeField] private float _movementSpeed = 4f;
+
+        private void Awake()
+        {
+            _characterController = GetComponent<CharacterController>();
+        }
+
+        private void Start()
         {
             trackingCamera = Camera.main.transform.GetComponent<TrackingCamera>();
             trackingCamera.SetTrackingTransform(transform);
         }
-    }
 
-    void FixedUpdate()
-    {
-        if (isLocalPlayer)
+        void FixedUpdate()
         {
             Move();
         }
-    }
 
-    private void Move()
-    {
-        Vector2 currentPos = _rigidbody2D.position;
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        private void Move()
+        {
+            Vector3 currentPos = transform.position;
+            float horizontalInput = Input.GetAxis("Horizontal");
+            float verticalInput = Input.GetAxis("Vertical");
+            
+            Vector3 inputVector = new Vector3(horizontalInput, Gravity(), verticalInput).normalized;
+            Vector3 movement = inputVector * _movementSpeed;
+            _characterController.Move(movement * Time.fixedDeltaTime);
+        }
 
-        Vector2 inputVector = new Vector2(horizontalInput, verticalInput).normalized;
-        Vector2 movement = inputVector * _movementSpeed;
-        Vector2 newPos = currentPos + movement * Time.fixedDeltaTime;
+        private float Gravity()
+        {
+            float value;
+            if (!_characterController.isGrounded)
+            {
+                value = -1f;
+            }
+            else
+            {
+                value = 0f;
+            }
 
-        _rigidbody2D.MovePosition(newPos);
+            return value;
+        }
     }
 }

@@ -23,6 +23,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.unity.2d.pixel-perfect": {
+      "version": "4.0.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
     "com.unity.2d.psdimporter": {
       "version": "4.2.0",
       "depth": 0,
@@ -94,6 +101,15 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.unity.probuilder": {
+      "version": "4.5.2",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.settings-manager": "1.0.3"
+      },
+      "url": "https://packages.unity.com"
+    },
     "com.unity.render-pipelines.core": {
       "version": "10.8.1",
       "depth": 1,
@@ -130,6 +146,13 @@
       "dependencies": {
         "com.unity.modules.unitywebrequest": "1.0.0"
       },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.settings-manager": {
+      "version": "1.0.3",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {},
       "url": "https://packages.unity.com"
     },
     "com.unity.shadergraph": {

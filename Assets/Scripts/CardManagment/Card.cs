@@ -2,27 +2,36 @@ using UnityTemplateProjects.Game;
 
 namespace UnityTemplateProjects
 {
+    public enum Features
+    {
+        Holy = 1,
+        Demonic = 2,
+        Physical = 3,
+        EmitsLight = 4,
+        MakesSound = 5,
+        HasSmell = 6
+    }
+    
     public abstract class Card
     {
         private string _name;
         private string _description;
-        private int _horror;
-        private int _reason;
+        private Features[] _cardFeatures;
         
-        private CardDanger[] _cardDangers;
+        private CardEvent[] _cardEvents;
 
-        public void ActivateAllDangers(IPlayer player)
+        public void ActivateAllEvents(IPlayer player)
         {
-            foreach (var cardDanger in _cardDangers)
+            foreach (var cardEvent in _cardEvents)
             {
-                cardDanger.ActivateAllEvents(player);
+                cardEvent.Activate(player);
             }
         }
 
-        public void ActivateDanger(IPlayer player, int number)
+        public void ActivateEvent(IPlayer player, int number)
         {
-            if(_cardDangers.Length < number && number < 0) return;
-            _cardDangers[number].ActivateAllEvents(player);
+            if(_cardEvents.Length < number && number < 0) return;
+            _cardEvents[number].Activate(player);
         }
         
     }
