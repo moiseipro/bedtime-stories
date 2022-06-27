@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Experimental.Rendering.Universal;
 using UnityEngine.UIElements;
+using UnityTemplateProjects.UI;
 
 namespace CardManagment
 {
@@ -51,7 +52,8 @@ namespace CardManagment
         
         public void OnDrag(PointerEventData eventData)
         {
-            RectTransformUtility.ScreenPointToWorldPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _currentPosition);
+            _currentPosition = new Vector2(Screen.width * 0.75f, _rectTransform.anchoredPosition.y);
+            /*RectTransformUtility.ScreenPointToWorldPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _currentPosition);
             //Debug.Log(hand.GetComponent<RectTransform>().anchoredPosition.y);
             if(Mathf.Abs(_rectTransform.localPosition.y) < _handRectTransform.sizeDelta.y){
                 _currentRotation = Quaternion.AngleAxis(0f, Vector3.forward);
@@ -59,7 +61,8 @@ namespace CardManagment
             } else { 
                 _currentRotation = Quaternion.LookRotation(_rectTransform.forward, _rectTransform.position - _oldPosition);
                 _currentScale = _baseScale/2f;
-            }
+            }*/
+            
         }
         
         public void OnEndDrag(PointerEventData eventData){

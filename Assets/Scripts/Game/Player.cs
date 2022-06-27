@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
+using UnityTemplateProjects.UI;
 
 namespace UnityTemplateProjects.Game
 {
@@ -39,6 +40,8 @@ namespace UnityTemplateProjects.Game
         private int _horror;
         public int Horror => _horror;
 
+        private List<Features> _featuresPlayer = new List<Features>();
+
         public PlayerStats()
         {
             _reason = 5;
@@ -66,9 +69,6 @@ namespace UnityTemplateProjects.Game
 
     public class PlayerCards
     {
-        private List<EventCard> _eventCards = new List<EventCard>();
-        private List<StoryCard> _storyCards = new List<StoryCard>();
-        private List<CharacterCard> _characterCards = new List<CharacterCard>();
         private List<ActionCard> _actionCards = new List<ActionCard>();
 
         private List<Card> _cardInHand = new List<Card>();

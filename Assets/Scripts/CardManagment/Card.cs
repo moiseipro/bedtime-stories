@@ -7,9 +7,9 @@ namespace UnityTemplateProjects
         Holy = 1,
         Demonic = 2,
         Physical = 3,
-        EmitsLight = 4,
-        MakesSound = 5,
-        HasSmell = 6
+        Light = 4,
+        Sound = 5,
+        Smell = 6
     }
     
     public abstract class Card
