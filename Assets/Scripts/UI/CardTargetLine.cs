@@ -20,7 +20,7 @@ namespace UnityTemplateProjects.UI
             _camera = Camera.main;
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
             if (endTarget == null || startTarget == null) return;
             Vector3[] points = new Vector3[10];
@@ -39,8 +39,6 @@ namespace UnityTemplateProjects.UI
             Vector3 prev = screenStartPos, next;
             for (int i = 0; i < points.Length; i++) {
                 float t = magnitude * i / (points.Length-1);
-                float dx = t;
-                float dy = t * t;
                 next = screenStartPos + dir * t;
                 points[i] = next;
                 Debug.DrawLine(prev, next, Color.blue);
@@ -54,6 +52,12 @@ namespace UnityTemplateProjects.UI
         {
             startTarget = start;
             endTarget = end;
+        }
+
+        public void HideLineTarget()
+        {
+            startTarget = transform;
+            endTarget = transform;
         }
     }
 }

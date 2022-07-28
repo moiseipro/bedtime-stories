@@ -12,13 +12,21 @@ namespace UnityTemplateProjects
         Smell = 6
     }
     
-    public abstract class Card
+    public class GameCard
     {
-        private string _name;
-        private string _description;
-        private Features[] _cardFeatures;
+        public string Name { get; }
+        public string Description { get; }
+        public Features[] Features { get; }
         
         private CardEvent[] _cardEvents;
+
+        public GameCard(string name, string description, Features[] featuresArray)
+        {
+            Name = name;
+            Description = description;
+            if (featuresArray.Length > 3) Features = new Features[3];
+            else Features = featuresArray;
+        }
 
         public void ActivateAllEvents(IPlayer player)
         {

@@ -8,38 +8,33 @@ namespace UnityTemplateProjects.UI
     [RequireComponent(typeof(RectTransform))]
     public class FeaturesView : MonoBehaviour
     {
-        private const int _featuresCount = 9;
-        
-        [SerializeField]private Transform target;
+        [SerializeField]private int _featuresCount = 9;
         [SerializeField]private FeaturesItem _featuresItem;
-        [SerializeField]private Vector3 _offset;
 
-        private FeaturesItem[] _featuresItems = new FeaturesItem[_featuresCount];
-        private RectTransform _rectTransform;
-        private Camera _camera;
+        private FeaturesItem[] _featuresItems;
+        
 
         private void Awake()
         {
-            _rectTransform = GetComponent<RectTransform>();
-            _camera = Camera.main;
+            GenerateFeaturesItems();
+        }
+
+        public void GenerateFeaturesItems()
+        {
+            _featuresItems = new FeaturesItem[_featuresCount];
             for (int i = 0; i < _featuresCount; i++)
             {
                 _featuresItems[i] = Instantiate(_featuresItem, transform);
             }
-            
+
         }
 
-        private void FixedUpdate()
+        public void ShowFeatures(Features[] features)
         {
-            if (target)
+            for (int i = 0; i < features.Length; i++)
             {
-                _rectTransform.position = _camera.WorldToScreenPoint(target.transform.position+_offset);
+                _featuresItems[i].ShowIconFeature(features[i]);
             }
-        }
-
-        private void ShowFeatures(Features[] features)
-        {
-            
         }
     }
 }

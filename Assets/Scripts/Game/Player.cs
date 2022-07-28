@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using CardManagment;
 using Mirror;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityTemplateProjects.UI;
 
 namespace UnityTemplateProjects.Game
@@ -12,10 +14,13 @@ namespace UnityTemplateProjects.Game
         void TakeDamage(int value);
         void TakeHorror(int value);
     }
-    public class Player : MonoBehaviour, IPlayer
+    public class Player : MonoBehaviour, IPlayer, IDropHandler, IPointerEnterHandler, IPointerExitHandler
     {
+        [SerializeField]private FeaturesView _featuresView;
+        
         private PlayerStats _playerStats = new PlayerStats();
         private PlayerCards _playerCards = new PlayerCards();
+        private FeaturesHandler _featuresHandler = new FeaturesHandler();
 
         private void Awake()
         {
@@ -30,6 +35,42 @@ namespace UnityTemplateProjects.Game
         public void TakeHorror(int value)
         {
             throw new NotImplementedException();
+        }
+        
+        public void OnDrop(PointerEventData eventData)
+        {
+            if (eventData.pointerDrag != null)
+            {
+                DraggableCard draggableCard = eventData.pointerDrag.GetComponent<DraggableCard>();
+                _featuresHandler.AddFeatures(draggableCard.Card.Features);
+                Debug.Log ("Dropped object was: "  + eventData.pointerDrag);
+                Destroy(eventData.pointerDrag);
+                _featuresView.ShowFeatures(_featuresHandler.GetFeatures());
+            }
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (eventData.pointerDrag != null)
+            {
+                var dragCard = eventData.pointerDrag.GetComponent<DraggableCard>();
+                dragCard.SetCardState(DragState.Target);
+                dragCard.SetTargetLineCard(transform);
+                //FindObjectOfType<CardTargetLine>().ShowLineTarget(eventData.pointerDrag.transform, transform);
+                Debug.Log ("Enter object was: "  + eventData.pointerDrag);
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (eventData.pointerDrag != null)
+            {
+                var dragCard = eventData.pointerDrag.GetComponent<DraggableCard>();
+                dragCard.SetCardState(DragState.Drag);
+                dragCard.HideLineTarget();
+                //FindObjectOfType<CardTargetLine>().HideLineTarget();
+                Debug.Log ("Exit object was: "  + eventData.pointerDrag);
+            }
         }
     }
 

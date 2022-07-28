@@ -44,7 +44,7 @@ namespace CardManagment
                 Vector3 newCardPos = new Vector3(_handPosition.x + cardXOffset*cardXDistance, _handPosition.y +cardYOffset*cardYDistance, _handPosition.z)+ offsetHandPos*Screen.width/Screen.height;
                 //Quaternion newCardRot = Quaternion.LookRotation(cardArray[i].transform.forward, currentCorner);
                 Quaternion newCardRot = Quaternion.AngleAxis(-cardXOffset*10f, Vector3.forward);
-                cardArray[i].SetCurPosition(newCardPos, newCardRot);
+                cardArray[i].SetBasePosition(newCardPos, newCardRot);
             }
         }
 
