@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - InteractiveCards
+  - ship
+  - asteroid
   layers:
   - Default
   - TransparentFX
@@ -41,4 +43,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Cards
+    uniqueID: 2856121841
     locked: 0

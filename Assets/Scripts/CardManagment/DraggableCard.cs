@@ -14,48 +14,61 @@ namespace CardManagment
     }
     public class DraggableCard : MonoBehaviour, IDragHandler, IEndDragHandler, IBeginDragHandler
     {
-        private RectTransform _rectTransform, _handRectTransform;
-        private CanvasGroup _canvasGroup;
+        private Transform _transform, _handTransform;
+        private Collider _collider;
+        private SpriteRenderer _spriteRenderer;
+        private Vector2 _cardSize;
 
         private DragState _dragState = DragState.Hand;
         private GameCard _card;
         public GameCard Card => _card;
         private CardTargetLine _cardTargetLine;
-        private FeaturesView _featuresView;
+        //private FeaturesView _featuresView;
 
         private Vector3 _currentPosition, _oldPosition;
         private Quaternion _currentRotation, _oldRotation;
         private Vector3 _currentScale, _baseScale;
         private float _lerpSpeed = 5f;
 
+        private Vector3 _dragPosition;
+        public Vector3 DragPosition => _dragPosition;
+
         private void Awake()
         {
-            _featuresView = GetComponentInChildren<FeaturesView>();
+            //_featuresView = GetComponentInChildren<FeaturesView>();
             SetCard(new GameCard("Test" + Random.Range(0, 100), "Test descr" + Random.Range(0, 100),
                 new[]{Features.Demonic,Features.Holy}));
-            _canvasGroup = GetComponent<CanvasGroup>();
+            _collider = GetComponent<Collider>();
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _cardSize = _spriteRenderer.bounds.size;
+            Debug.Log(_cardSize);
             _cardTargetLine = GetComponentInChildren<CardTargetLine>();
-            _rectTransform = transform as RectTransform;
-            _handRectTransform = _rectTransform.parent.transform as RectTransform;
-            _currentScale = _baseScale = _rectTransform.localScale;
+            _transform = transform;
+            _handTransform = _transform.parent.transform;
+            _currentScale = _baseScale = _transform.localScale;
         }
 
         private void FixedUpdate()
         {
-            _rectTransform.position = Vector3.Lerp(_rectTransform.position, _currentPosition, Time.deltaTime * _lerpSpeed);
-            _rectTransform.rotation = Quaternion.Lerp(_rectTransform.rotation, _currentRotation, Time.deltaTime * _lerpSpeed);
-            _rectTransform.localScale = Vector3.Lerp(_rectTransform.localScale, _currentScale, Time.deltaTime * _lerpSpeed);
+            _transform.position = Vector3.Lerp(_transform.position, _currentPosition, Time.deltaTime * _lerpSpeed);
+            _transform.rotation = Quaternion.Lerp(_transform.rotation, _currentRotation, Time.deltaTime * _lerpSpeed);
+            _transform.localScale = Vector3.Lerp(_transform.localScale, _currentScale, Time.deltaTime * _lerpSpeed);
         }
 
+        public bool IsColliderActive()
+        {
+            return _collider.enabled;
+        }
+        
         public void SetCard(GameCard card)
         {
             _card = card;
-            _featuresView.ShowFeatures(_card.Features);
+            //_featuresView.ShowFeatures(_card.Features);
         }
 
         public void SetTargetLineCard(Transform endTarget)
         {
-            _cardTargetLine.ShowLineTarget(transform, endTarget);
+            _cardTargetLine.ShowLineTarget(_transform, endTarget);
         }
 
         public void HideLineTarget()
@@ -74,7 +87,7 @@ namespace CardManagment
         }
 
         public void OnBeginDrag(PointerEventData eventData){
-            _canvasGroup.blocksRaycasts = false;
+            _collider.enabled = false;
             SetCardState(DragState.Drag);
         }
         
@@ -83,31 +96,25 @@ namespace CardManagment
             
             if (_dragState == DragState.Target)
             {
-                _currentPosition = new Vector2(Screen.width * 0.9f, Screen.height * 0.5f);
-                _currentRotation = Quaternion.AngleAxis(0f, Vector3.forward);
                 _currentScale = _baseScale/1.2f;
+                _dragPosition =
+                    eventData.pressEventCamera.ScreenToWorldPoint((Vector3)eventData.position + eventData.pressEventCamera.transform.forward*15f) 
+                    + (Vector3)_cardSize / 2f * _currentScale.magnitude;
             }
             else
             {
                 //_currentRotation = Quaternion.LookRotation(_rectTransform.forward, _rectTransform.position - _oldPosition);
-                _currentRotation = Quaternion.AngleAxis(0f, Vector3.forward);
                 _currentScale = _baseScale/1.5f;
-                RectTransformUtility.ScreenPointToWorldPointInRectangle(_rectTransform, eventData.position+_rectTransform.sizeDelta/2f*_currentScale, eventData.pressEventCamera, out _currentPosition);
+                _dragPosition =
+                    eventData.pressEventCamera.ScreenToWorldPoint((Vector3)eventData.position + eventData.pressEventCamera.transform.forward*15f) 
+                    + (Vector3)_cardSize / 2f * _currentScale.magnitude;
+                //Debug.Log(eventData.position+"|||"+_dragPosition);
+                //_currentPosition = eventData.pressEventCamera.ScreenToWorldPoint(eventData.position + _cardSize / 2f * _currentScale);
             }
-            /*RectTransformUtility.ScreenPointToWorldPointInRectangle(_rectTransform, eventData.position, eventData.pressEventCamera, out _currentPosition);
-            //Debug.Log(hand.GetComponent<RectTransform>().anchoredPosition.y);
-            if(Mathf.Abs(_rectTransform.localPosition.y) < _handRectTransform.sizeDelta.y){
-                _currentRotation = Quaternion.AngleAxis(0f, Vector3.forward);
-                _currentScale = _baseScale;
-            } else { 
-                _currentRotation = Quaternion.LookRotation(_rectTransform.forward, _rectTransform.position - _oldPosition);
-                _currentScale = _baseScale/2f;
-            }*/
-            
         }
         
         public void OnEndDrag(PointerEventData eventData){
-            _canvasGroup.blocksRaycasts = true;
+            _collider.enabled = true;
             _currentPosition = _oldPosition;
             _currentRotation = _oldRotation;
             _currentScale = _baseScale;

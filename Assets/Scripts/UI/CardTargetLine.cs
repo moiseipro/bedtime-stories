@@ -14,6 +14,8 @@ namespace UnityTemplateProjects.UI
         private Transform startTarget;
         private Transform endTarget;
 
+        private const int _pointCount = 10;
+
         private void Awake()
         {
             _lineRenderer = GetComponent<LineRenderer>();
@@ -23,29 +25,30 @@ namespace UnityTemplateProjects.UI
         private void Update()
         {
             if (endTarget == null || startTarget == null) return;
-            Vector3[] points = new Vector3[10];
+            Vector3[] points = new Vector3[_pointCount];
+            _lineRenderer.positionCount = _pointCount;
 
             Vector3 endPosition = endTarget.position;
-            Vector3 screenStartPos = startTarget.position;
-            screenStartPos.z = _camera.nearClipPlane;
-            screenStartPos = _camera.ScreenToWorldPoint(screenStartPos);
+            Vector3 startPosition = startTarget.position;
+            // screenStartPos.z = _camera.nearClipPlane;
+            // screenStartPos = _camera.ScreenToWorldPoint(screenStartPos);
             
             Vector3 dir;
-            dir = endPosition - screenStartPos;
+            dir = endPosition - startPosition;
             float magnitude = dir.magnitude;
             dir /= magnitude;
-            Debug.DrawLine(screenStartPos, endTarget.position, Color.yellow);
+            Debug.DrawLine(startPosition, endTarget.position, Color.yellow);
 
-            Vector3 prev = screenStartPos, next;
+            Vector3 prev = startPosition, next;
             for (int i = 0; i < points.Length; i++) {
                 float t = magnitude * i / (points.Length-1);
-                next = screenStartPos + dir * t;
+                next = startPosition + dir * t;
                 points[i] = next;
                 Debug.DrawLine(prev, next, Color.blue);
                 prev = next;
             }
-            
             _lineRenderer.SetPositions(points);
+            
         }
 
         public void ShowLineTarget(Transform start, Transform end)
@@ -56,8 +59,9 @@ namespace UnityTemplateProjects.UI
 
         public void HideLineTarget()
         {
-            startTarget = transform;
-            endTarget = transform;
+            _lineRenderer.positionCount = 0;
+            startTarget = null;
+            endTarget = null;
         }
     }
 }

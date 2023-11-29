@@ -15,11 +15,14 @@ namespace CardManagment
         public CardDrag curCardHand;
 
         private Vector3 _handPosition;
-        private RectTransform _rectTransform;
+        private Transform _transform;
+
+        private Camera _camera;
         
         void Start()
         {
-            _rectTransform = transform as RectTransform;
+            _transform = transform;
+            _camera = Camera.main;
 
             cardArray = GetComponentsInChildren<DraggableCard>().ToList();
             CardPositionInitialize();
@@ -29,28 +32,44 @@ namespace CardManagment
         public void CardPositionInitialize(){
             float cardXOffset, cardYOffset;
             var maxOffset = cardArray.Count/2-0.5f;
-            float cardXDistance = _rectTransform.position.x/(float)maxCardCount*offsetCardX;
-            float cardYDistance = Screen.height/(float)maxCardCount*offsetCardY;
-            Debug.Log(cardXDistance);
-            _handPosition = _rectTransform.position;
+            _handPosition = _camera.transform.position;
+            float cardXDistance = (float)maxCardCount*offsetCardX;
+            float cardYDistance = (float)maxCardCount*offsetCardY;
+            //Debug.Log(cardXDistance);
             for (var i = 0; i < cardArray.Count; i++)
             {
-                if(cardArray.Count%2==0) cardXOffset = -maxOffset + i;
-                else cardXOffset = -cardArray.Count/2 + i;
+                Vector3 newCardPos = Vector3.zero;
+                Quaternion newCardRot = Quaternion.identity;
+                if (cardArray[i].IsColliderActive())
+                {
+                    if(cardArray.Count%2==0) cardXOffset = -maxOffset + i;
+                    else cardXOffset = -cardArray.Count/2 + i;
 
-                cardYOffset = -Mathf.Abs(cardXOffset)+maxOffset;
-                //Debug.Log(cardXOffset);
+                    cardYOffset = -Mathf.Abs(cardXOffset)+maxOffset;
+                    //Debug.Log(cardXOffset);
 
-                Vector3 newCardPos = new Vector3(_handPosition.x + cardXOffset*cardXDistance, _handPosition.y +cardYOffset*cardYDistance, _handPosition.z)+ offsetHandPos*Screen.width/Screen.height;
-                //Quaternion newCardRot = Quaternion.LookRotation(cardArray[i].transform.forward, currentCorner);
-                Quaternion newCardRot = Quaternion.AngleAxis(-cardXOffset*10f, Vector3.forward);
+                    newCardPos = new Vector3(
+                        _handPosition.x + cardXOffset * cardXDistance, 
+                        _handPosition.y + cardYOffset * cardYDistance, 
+                        _handPosition.z) + offsetHandPos * Screen.width / Screen.height;
+                    //Quaternion newCardRot = Quaternion.LookRotation(cardArray[i].transform.forward, currentCorner);
+                    //Quaternion newCardRot = Quaternion.AngleAxis(-cardXOffset*10f, Vector3.forward);
+                    newCardRot = Quaternion.LookRotation(newCardPos - _handPosition, Vector3.up);
+                }
+                else
+                {
+                    newCardPos = cardArray[i].DragPosition;
+                    //Debug.Log(newCardPos);
+                    newCardRot = Quaternion.LookRotation(newCardPos - _handPosition, Vector3.up);
+                }
+                
                 cardArray[i].SetBasePosition(newCardPos, newCardRot);
             }
         }
 
         private void FixedUpdate()
         {
-            //CardPositionInitialize();
+            CardPositionInitialize();
         }
     }
 }
