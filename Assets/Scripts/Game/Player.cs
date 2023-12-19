@@ -1,118 +1,159 @@
 using System;
 using System.Collections.Generic;
-using CardManagment;
-using Mirror;
+using CardManagement;
+using Gameplay.Network;
+using MapManagement.Generator;
+using UI.Test;
+using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityTemplateProjects.UI;
+using Random = UnityEngine.Random;
 
-namespace UnityTemplateProjects.Game
+namespace Game
 {
-    public interface IPlayer
+    public interface ICardTarget
     {
         
-        void TakeDamage(int value);
+        void ReduceReason(int value);
         void TakeHorror(int value);
     }
-    public class Player : MonoBehaviour, IPlayer, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+    public class Player : NetworkBehaviour
     {
-        [SerializeField]private FeaturesView _featuresView;
-        
-        private PlayerStats _playerStats = new PlayerStats();
+        [SerializeField] private NetworkVariable<int> _maxTurnCount = new NetworkVariable<int>(2);
+        [SerializeField] private PlayerStats _playerStats = new PlayerStats();
         private PlayerCards _playerCards = new PlayerCards();
-        private FeaturesHandler _featuresHandler = new FeaturesHandler();
 
-        private void Awake()
-        {
-            Debug.Log(_playerStats.Reason);
-        }
+        [SerializeField] private PlayerChip playerChipPrefab;
+        private PlayerChip _playerChip;
+        [SerializeField] private HandView handViewPrefab;
+        private HandView _handView;
 
-        public void TakeDamage(int value)
+        public static Player LocalInstance;
+        
+        private ClientRpcParams _clientRpcParams = new ClientRpcParams
         {
-            throw new NotImplementedException();
-        }
+            Send = new ClientRpcSendParams()
+        };
 
-        public void TakeHorror(int value)
+        private GameMenuView _gameMenuView;
+
+        public override void OnNetworkSpawn()
         {
-            throw new NotImplementedException();
+            if (IsServer || IsHost)
+            {
+                _maxTurnCount.Value = 2;
+                PlayerChip newPlayerChip = Instantiate(playerChipPrefab, transform);
+                NetworkObject playerChipNetworkObject = newPlayerChip.GetComponent<NetworkObject>();
+                playerChipNetworkObject.SpawnWithOwnership(OwnerClientId);
+                
+                InitializePlayerChipClientRpc(playerChipNetworkObject);
+            }
+
+            if (IsOwner)
+            {
+                LocalInstance = this;
+                _handView = Instantiate(handViewPrefab, transform);
+                NetworkTurnManager.Instance.OnStartTurn += () =>
+                {
+                    SendTurnValue(_maxTurnCount.Value);
+                };
+            }
         }
         
-        public void OnDrop(PointerEventData eventData)
+        private void SendTurnValue(int value)
         {
-            if (eventData.pointerDrag != null)
-            {
-                DraggableCard draggableCard = eventData.pointerDrag.GetComponent<DraggableCard>();
-                _featuresHandler.AddFeatures(draggableCard.Card.Features);
-                Debug.Log ("Dropped object was: "  + eventData.pointerDrag);
-                Destroy(eventData.pointerDrag);
-                _featuresView.ShowFeatures(_featuresHandler.GetFeatures());
-            }
+            NetworkTurnManager.Instance.SetTurnValueServerRpc(value);
         }
 
-        public void OnPointerEnter(PointerEventData eventData)
+        [ClientRpc]
+        public void InitializePlayerChipClientRpc(NetworkObjectReference networkObjectReference)
         {
-            if (eventData.pointerDrag != null)
+            networkObjectReference.TryGet(out NetworkObject playerChipNetworkObject);
+            playerChipNetworkObject.TryGetComponent(out _playerChip);
+            _playerChip.Initialize(_playerStats);
+        }
+        
+        public void RequestMovePlayer(ServerRpcParams serverRpcParams = default)
+        {
+            _playerChip.MoveNextTileServerRpc();
+        }
+        
+        [ServerRpc]
+        public void RequestСardServerRpc(ServerRpcParams serverRpcParams = default)
+        {
+            if (NetworkTurnManager.Instance.Turn())
             {
-                var dragCard = eventData.pointerDrag.GetComponent<DraggableCard>();
-                dragCard.SetCardState(DragState.Target);
-                dragCard.SetTargetLineCard(transform);
-                //FindObjectOfType<CardTargetLine>().ShowLineTarget(eventData.pointerDrag.transform, transform);
-                Debug.Log ("Enter object was: "  + eventData.pointerDrag);
+                int randomCard = Random.Range(0, Gameplay.CardLoader.Instance.ActionCardsCount);
+                _clientRpcParams.Send.TargetClientIds = new ulong[] { serverRpcParams.Receive.SenderClientId };
+            
+                TakeCardClientRpc(randomCard, _clientRpcParams);
             }
+            
+        }
+        
+        [ClientRpc]
+        public void TakeCardClientRpc(int cardId, ClientRpcParams clientRpcParams = default)
+        {
+            if (!IsOwner) return;
+            _handView.TakeCard(Gameplay.CardLoader.Instance.GetActionCard(cardId));
         }
 
-        public void OnPointerExit(PointerEventData eventData)
+    }
+
+    public struct ReasonData
+    {
+        public int Reason;
+        public int MaxReason;
+
+        public ReasonData(int maxReason)
         {
-            if (eventData.pointerDrag != null)
-            {
-                var dragCard = eventData.pointerDrag.GetComponent<DraggableCard>();
-                dragCard.SetCardState(DragState.Drag);
-                dragCard.HideLineTarget();
-                //FindObjectOfType<CardTargetLine>().HideLineTarget();
-                Debug.Log ("Exit object was: "  + eventData.pointerDrag);
-            }
+            MaxReason = maxReason;
+            Reason = MaxReason;
         }
     }
 
+    public struct TurnData
+    {
+        public int MaxTurns;
+        public int MaxCardDistance;
+    }
+    
+    [Serializable]
     public class PlayerStats
     {
-        private int _reason;
-        public int Reason => _reason;
-        private int _horror;
-        public int Horror => _horror;
+        private ReasonData _reasonData;
+        private TurnData _turnData;
+        public int Reason => _reasonData.Reason;
+        public int MaxReason => _reasonData.MaxReason;
+        public int MaxTurns => _turnData.MaxTurns;
 
         private List<Features> _featuresPlayer = new List<Features>();
 
         public PlayerStats()
         {
-            _reason = 5;
-            _horror = 0;
+            _reasonData = new ReasonData(1);
+            _turnData = new TurnData
+            {
+                MaxCardDistance = 2,
+                MaxTurns = 1
+            };
         }
         
-        public void AddHealth(int value)
+        public void AddReason(int value)
         {
-            _reason += value;
-            Debug.Log("Получено здоровье: " + value);
+            _reasonData.Reason += value;
+            Debug.Log("Получено рассудка: " + value);
         }
 
-        public void ReduceHealth(int value)
+        public void ReduceReason(int value)
         {
-            _reason -= value;
-            Debug.Log("Забрано здоровье: " + value);
-        }
-
-        public void AddHorror(int value)
-        {
-            _horror += value;
-            Debug.Log("Получено ужаса: " + value);
+            _reasonData.Reason -= value;
+            Debug.Log("Забрано рассудка: " + value);
         }
     }
 
     public class PlayerCards
     {
-        private List<ActionCard> _actionCards = new List<ActionCard>();
-
-        private List<Card> _cardInHand = new List<Card>();
+        private List<Card> _cards = new List<Card>();
     }
     
 }

@@ -1,4 +1,3 @@
-using Mirror;
 using UnityEditor;
 using UnityEngine;
 using UnityTemplateProjects.Gameplay;

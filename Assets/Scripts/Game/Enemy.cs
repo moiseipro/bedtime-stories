@@ -1,10 +1,10 @@
-using System;
-using CardManagment;
+using CardManagement;
+using CardManagement.CardFeatures;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityTemplateProjects.UI;
 
-namespace UnityTemplateProjects.Game
+namespace Game
 {
     public class Enemy: MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
     {
@@ -22,7 +22,7 @@ namespace UnityTemplateProjects.Game
             if (eventData.pointerDrag != null)
             {
                 DraggableCard draggableCard = eventData.pointerDrag.GetComponent<DraggableCard>();
-                _featuresHandler.AddFeatures(draggableCard.Card.Features);
+                //_featuresHandler.AddFeatures(draggableCard.Card.Features);
                 Debug.Log ("Dropped object was: "  + eventData.pointerDrag);
                 Destroy(eventData.pointerDrag);
                 _featuresView.ShowFeatures(_featuresHandler.GetFeatures());
